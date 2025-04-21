@@ -5,6 +5,12 @@ import { FaArrowLeft, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { format, parse } from "date-fns";
 import { fetchVehicleDetails } from "../utils/api";
 import { fetchCarImage } from "../utils/imageApi";
+import {
+  formatDate,
+  formatString,
+  getLocalStorage,
+} from "../utils/helperFunctions";
+import { containerVariants, itemVariants } from "../utils/constants";
 
 function CarDetails() {
   const { registrationNumber } = useParams();
@@ -15,53 +21,43 @@ function CarDetails() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDetails = async () => {
+    const fetchDetails = () => {
       if (!registrationNumber) {
         setError("Invalid registration number");
         setLoading(false);
         return;
       }
 
-      try {
-        const details = await fetchVehicleDetails(
-          registrationNumber.trim().toUpperCase()
-        );
-        if (details && details.error) {
-          setError(details.error);
-          setLoading(false);
-          return;
-        }
-        setCarDetails(details);
-        if (details.make && details.make !== "Unknown") {
-          const url = await fetchCarImage(details.make, details.colour);
-          setImageUrl(url);
-        }
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching car details:", err);
-        setError("Error fetching car details.");
-      } finally {
+      // Get vehicles from localStorage
+      const vehicles = getLocalStorage("vehicles") || [];
+      const registration = registrationNumber.trim().toUpperCase();
+
+      // Find the vehicle by registrationNumber
+      const vehicle = vehicles.find(
+        (vehicle) => vehicle.registrationNumber.toUpperCase() === registration
+      );
+
+      if (!vehicle) {
+        setError("Vehicle not found in garage");
         setLoading(false);
+        return;
       }
+
+      // Set car details
+      console.log(vehicle);
+      setCarDetails(vehicle);
+
+      // Get image from imageCache
+      const imageCache = getLocalStorage("imageCache") || {};
+      const image = imageCache[vehicle.make] || "";
+      setImageUrl(image);
+
+      setError(null);
+      setLoading(false);
     };
 
     fetchDetails();
   }, [registrationNumber]);
-
-  // Format strings ( DIESEL to Diesel)
-  const formatString = (str) =>
-    str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : "N/A";
-
-  // Format dates ( 2025-10-01 to 01 Oct 2025)
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "N/A";
-    try {
-      const date = parse(dateStr, "yyyy-MM-dd", new Date());
-      return format(date, "dd MMM yyyy");
-    } catch {
-      return dateStr;
-    }
-  };
 
   // Render status badge
   const renderStatusBadge = (status, isTax) => {
@@ -76,24 +72,6 @@ function CarDetails() {
         <span>{status || "N/A"}</span>
       </span>
     );
-  };
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        when: "beforeChildren",
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 },
   };
 
   if (loading) {
@@ -163,7 +141,7 @@ function CarDetails() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className={` relative max-h-[85vh] w-[90%]  sm:max-w-[75%] mx-auto mt-4`}
+            className={` relative max-h-[80vh] w-[90%] lg:w-3/5  sm:max-w-[75%] mx-auto mt-4`}
           >
             {/* Navigation Button */}
             {/* Navigation Button */}
@@ -197,7 +175,7 @@ function CarDetails() {
             >
               <motion.div
                 variants={itemVariants}
-                className="w-full mx-auto bg-center bg-cover shadow-lg min-h-80 lg:h-80 lg:bg-no-repeat"
+                className="w-full mx-auto bg-center bg-cover shadow-lg min-h-64 lg:h-64 lg:bg-no-repeat"
                 style={{ backgroundImage: `url(${imageUrl})` }}
               ></motion.div>
               <div className=" sm:w-[80%] lg:w-3/4 mt-2  mx-auto grid items-start grid-cols-1 gap-10 p-2 sm:p-8 md:gap-6 sm:grid-cols-1 lg:grid-cols-2 place-items-center">
