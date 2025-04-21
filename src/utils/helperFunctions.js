@@ -57,30 +57,21 @@ export const formatDate = (dateStr) => {
   }
 };
 
-// Animation variants
-export const containerVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      when: "beforeChildren",
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-export const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0 },
-};
-
-export const getLocalStorage = (key, defaultValue = null) => {
+export const getLocalStorage = (key) => {
   try {
-    const storedData = localStorage.getItem(key);
-    return storedData ? JSON.parse(storedData) : defaultValue;
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
   } catch (error) {
-    console.error(`Error retrieving ${key} from localStorage:`, error);
-    return defaultValue;
+    console.error(`Error getting ${key} from localStorage:`, error);
+    return null;
+  }
+};
+export const setLocalStorage = (key, value = null) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.error(`Error setting ${key} in localStorage:`, error);
+    return false;
   }
 };
