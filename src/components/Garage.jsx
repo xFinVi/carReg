@@ -257,7 +257,7 @@ function Garage() {
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: "spring", stiffness: 100, damping: 15 }}
-                className="text-center flex text-base justify-center items-center font-bold text-gray-700 bg-yellow-500 max-w-[350px] px-4 text-lg rounded-lg py-2"
+                className="text-center flex  justify-center items-center font-bold text-gray-700 bg-yellow-500 max-w-[350px] px-4 text-lg rounded-lg py-2"
               >
                 You have {vehicles.length} vehicles.
               </motion.h2>
